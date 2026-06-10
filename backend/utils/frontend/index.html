@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML From Scratch Playground - SVM & k-NN</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="brand">
+                <h1>ScratchML</h1>
+                <span class="badge">Playground</span>
+            </div>
+            <p class="description">SVM and k-NN classification models built entirely from scratch in Python.</p>
+            <hr class="divider">
+            
+            <section class="config-section">
+                <h2>1. Dataset Configuration</h2>
+                <div class="input-group">
+                    <label for="dataset-type">Dataset Type</label>
+                    <select id="dataset-type">
+                        <option value="moons">Half Moons</option>
+                        <option value="circles">Concentric Circles</option>
+                        <option value="separable">Linearly Separable</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <div class="label-with-value">
+                        <label for="sample-size">Samples Count</label>
+                        <span id="sample-size-val" class="val-display">250</span>
+                    </div>
+                    <input type="range" id="sample-size" min="100" max="500" step="50" value="250">
+                </div>
+                <div class="input-group">
+                    <div class="label-with-value">
+                        <label for="noise-level">Noise Level</label>
+                        <span id="noise-level-val" class="val-display">0.15</span>
+                    </div>
+                    <input type="range" id="noise-level" min="0.01" max="0.5" step="0.02" value="0.15">
+                </div>
+                <button id="btn-generate" class="btn btn-primary">Generate Dataset</button>
+            </section>
+            
+            <section class="config-section knn-section">
+                <h2>2. k-NN Classifier</h2>
+                <div class="input-group">
+                    <label for="knn-metric">Distance Metric</label>
+                    <select id="knn-metric">
+                        <option value="euclidean">Euclidean</option>
+                        <option value="manhattan">Manhattan</option>
+                        <option value="chebyshev">Chebyshev</option>
+                    </select>
+                </div>
+                <div class="input-group checkbox-group">
+                    <input type="checkbox" id="knn-auto-k" checked>
+                    <label for="knn-auto-k">Auto-select K (Elbow Method)</label>
+                </div>
+                <div class="input-group" id="knn-k-group" style="display: none;">
+                    <div class="label-with-value">
+                        <label for="knn-k">Number of Neighbors (k)</label>
+                        <span id="knn-k-val" class="val-display">5</span>
+                    </div>
+                    <input type="range" id="knn-k" min="1" max="15" step="2" value="5">
+                </div>
+                <button id="btn-train-knn" class="btn btn-knn">Train k-NN Classifier</button>
+            </section>
+            
+            <section class="config-section svm-section">
+                <h2>3. SVM Classifier</h2>
+                <div class="input-group">
+                    <label for="svm-kernel">Kernel Function</label>
+                    <select id="svm-kernel">
+                        <option value="linear">Linear Kernel</option>
+                        <option value="rbf" selected>RBF (Gaussian) Kernel</option>
+                        <option value="polynomial">Polynomial Kernel</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <div class="label-with-value">
+                        <label for="svm-c">Regularization (C)</label>
+                        <span id="svm-c-val" class="val-display">1.0</span>
+                    </div>
+                    <input type="range" id="svm-c" min="0.1" max="10" step="0.5" value="1.0">
+                </div>
+                <div class="input-group" id="svm-degree-group" style="display: none;">
+                    <div class="label-with-value">
+                        <label for="svm-degree">Polynomial Degree</label>
+                        <span id="svm-degree-val" class="val-display">3</span>
+                    </div>
+                    <input type="range" id="svm-degree" min="2" max="5" step="1" value="3">
+                </div>
+                <div class="input-group" id="svm-gamma-group">
+                    <div class="label-with-value">
+                        <label for="svm-gamma">Gamma (&gamma;)</label>
+                        <span id="svm-gamma-val" class="val-display">0.5</span>
+                    </div>
+                    <input type="range" id="svm-gamma" min="0.1" max="5.0" step="0.1" value="0.5">
+                </div>
+                <button id="btn-train-svm" class="btn btn-svm">Train SVM Classifier</button>
+            </section>
+        </aside>
+        
+        <main class="dashboard">
+            <header class="dashboard-header">
+                <h2>Model Evaluation Dashboard</h2>
+                <div id="status-bar" class="status-bar">
+                    <span class="status-dot green"></span>
+                    <span id="status-text">Backend Connected</span>
+                </div>
+            </header>
+            
+            <div class="dashboard-card metrics-card">
+                <h3>Performance Comparison</h3>
+                <div class="table-container">
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th>k-NN (custom)</th>
+                                <th>SVM (custom)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Accuracy</td>
+                                <td id="knn-acc" class="metric-val">-</td>
+                                <td id="svm-acc" class="metric-val">-</td>
+                            </tr>
+                            <tr>
+                                <td>Precision</td>
+                                <td id="knn-prec" class="metric-val">-</td>
+                                <td id="svm-prec" class="metric-val">-</td>
+                            </tr>
+                            <tr>
+                                <td>Recall</td>
+                                <td id="knn-rec" class="metric-val">-</td>
+                                <td id="svm-rec" class="metric-val">-</td>
+                            </tr>
+                            <tr>
+                                <td>F1-Score</td>
+                                <td id="knn-f1" class="metric-val">-</td>
+                                <td id="svm-f1" class="metric-val">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="plots-grid">
+                <div class="dashboard-card plot-card">
+                    <div class="plot-header">
+                        <h3>k-NN Decision Boundary</h3>
+                        <span class="badge badge-knn" id="knn-badge">k=5</span>
+                    </div>
+                    <div class="plot-body" id="knn-plot-container">
+                        <div class="placeholder-text">Generate dataset and train model to visualize.</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card plot-card">
+                    <div class="plot-header">
+                        <h3>SVM Decision Boundary</h3>
+                        <span class="badge badge-svm" id="svm-badge">RBF</span>
+                    </div>
+                    <div class="plot-body" id="svm-plot-container">
+                        <div class="placeholder-text">Generate dataset and train model to visualize.</div>
+                    </div>
+                </div>
+                
+                <div class="dashboard-card plot-card elbow-card-full">
+                    <div class="plot-header">
+                        <h3>k-NN Elbow Method Analysis</h3>
+                    </div>
+                    <div class="plot-body" id="elbow-plot-container">
+                        <div class="placeholder-text">Run k-NN with 'Auto-select K' enabled to generate Elbow curve.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
